@@ -1,0 +1,17 @@
+{
+  "name": "soryn-fun-bot",
+  "version": "1.0.0",
+  "description": "Fun Discord Bot with integrated webserver",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js"
+  },
+  "keywords": ["discord", "bot", "webserver"],
+  "author": "SorynTech",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^14.14.1",
+    "express": "^4.18.2",
+    "dotenv": "^16.3.1"
+  }
+}
