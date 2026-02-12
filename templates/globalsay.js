@@ -31,10 +31,11 @@ module.exports = {
         for (const guild of client.guilds.cache.values()) {
             try {
                 // Try to find a suitable channel (first text channel the bot can send to)
-                const channel = guild.channels.cache.find(ch => 
-                    ch.isTextBased() && 
-                    ch.permissionsFor(guild.members.me).has(['SendMessages', 'ViewChannel'])
-                );
+                const channel = guild.channels.cache.find(ch => {
+                    if (!ch.isTextBased()) return false;
+                    const permissions = ch.permissionsFor(guild.members.me);
+                    return permissions && permissions.has('SendMessages') && permissions.has('ViewChannel');
+                });
                 
                 if (channel) {
                     await channel.send(message);

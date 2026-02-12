@@ -6,7 +6,7 @@ Fun Discord Bot with integrated underwater shark-themed webserver dashboard!
 
 - 🤖 Discord bot with slash commands
 - 🌊 Underwater shark-themed web dashboard
-- 🔐 Secure HTTPS login system with authentication
+- 🔐 Secure HTTP login system with authentication
 - 📊 Real-time command usage tracking
 - 🦈 Owner-only commands for bot control
 

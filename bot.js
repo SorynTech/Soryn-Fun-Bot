@@ -2,6 +2,7 @@ require('dotenv').config();
 const { Client, GatewayIntentBits, Collection, REST, Routes } = require('discord.js');
 const express = require('express');
 const http = require('http');
+const crypto = require('crypto');
 
 // Configuration
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
@@ -139,12 +140,30 @@ app.use(express.urlencoded({ extended: true }));
 
 // Session storage (in-memory for simplicity)
 const sessions = new Map();
+const SESSION_TIMEOUT = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+
+// Clean up expired sessions periodically
+setInterval(() => {
+    const now = Date.now();
+    for (const [token, session] of sessions.entries()) {
+        if (now - session.loginTime.getTime() > SESSION_TIMEOUT) {
+            sessions.delete(token);
+        }
+    }
+}, 60 * 60 * 1000); // Check every hour
 
 // Middleware to check authentication
 function requireAuth(req, res, next) {
     const sessionToken = req.headers['x-session-token'] || req.query.token;
     
     if (sessions.has(sessionToken)) {
+        const session = sessions.get(sessionToken);
+        // Check if session is expired
+        if (Date.now() - session.loginTime.getTime() > SESSION_TIMEOUT) {
+            sessions.delete(sessionToken);
+            res.status(401).json({ error: 'Session expired' });
+            return;
+        }
         next();
     } else {
         res.status(401).json({ error: 'Unauthorized' });
@@ -156,7 +175,7 @@ app.post('/api/login', (req, res) => {
     const { username, password } = req.body;
     
     if (username === WEB_USERNAME && password === WEB_PASSWORD) {
-        const token = Math.random().toString(36).substring(2) + Date.now().toString(36);
+        const token = crypto.randomBytes(32).toString('hex');
         sessions.set(token, { username, loginTime: new Date() });
         
         res.json({ success: true, token });
@@ -545,12 +564,12 @@ app.get('/', (req, res) => {
                     return;
                 }
                 
-                logsContainer.innerHTML = data.logs.slice(-10).reverse().map(log => `
+                logsContainer.innerHTML = data.logs.slice(-10).reverse().map(log => \`
                     <div class="log-entry">
-                        <div class="time">${new Date(log.timestamp).toLocaleString()}</div>
-                        <div><strong>${log.username}</strong> used <strong>/${log.commandName}</strong> in ${log.guildName || 'DM'}</div>
+                        <div class="time">\${new Date(log.timestamp).toLocaleString()}</div>
+                        <div><strong>\${log.username}</strong> used <strong>/\${log.commandName}</strong> in \${log.guildName || 'DM'}</div>
                     </div>
-                `).join('');
+                \`).join('');
             } catch (error) {
                 console.error('Error loading logs:', error);
             }
